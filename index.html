@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pengirim Pesan Acak WhatsApp</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+    .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h2 { color: #075e54; margin-top: 0; }
+    .grid { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+    .col { flex: 1; min-width: 300px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #075e54; color: white; }
+    input[type="text"], textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    textarea { height: 60px; resize: vertical; }
+    .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-add { background-color: #128c7e; color: white; margin-top: 5px; }
+    .btn-del { background-color: #dc3545; color: white; }
+    .btn-process { background-color: #25d366; color: white; font-size: 16px; width: 100%; padding: 12px; margin-top: 10px; }
+    .btn-wa { background-color: #25d366; color: white; text-decoration: none; padding: 6px 12px; border-radius: 4px; display: inline-block; font-size: 14px; }
+    .btn-wa:hover { background-color: #128c7e; }
+    .preview-table { margin-top: 20px; }
+    .preview-table td { vertical-align: top; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Aplikasi Pengirim Pesan Acak WhatsApp</h2>
+  <p>Isi nomor WhatsApp dan daftar pesan di bawah ini. Anda dapat menambah baris sesuai kebutuhan.</p>
+
+  <div class="grid">
+    <!-- Tabel Nomor WhatsApp -->
+    <div class="col">
+      <h3>Daftar Nomor WhatsApp Siswa</h3>
+      <table id="tabelNomor">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nomor WA (Contoh: 628123...)</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><input type="text" class="input-nomor" value="628123456789" placeholder="628xxx"></td>
+            <td><button class="btn btn-del" onclick="hapusBaris(this, 'tabelNomor')">Hapus</button></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><input type="text" class="input-nomor" value="628987654321" placeholder="628xxx"></td>
+            <td><button class="btn btn-del" onclick="hapusBaris(this, 'tabelNomor')">Hapus</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn btn-add" onclick="tambahBarisNomor()">+ Tambah Nomor</button>
+    </div>
+
+    <!-- Tabel Daftar Pesan -->
+    <div class="col">
+      <h3>Daftar Pesan / Soal</h3>
+      <table id="tabelPesan">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Isi Pesan / Soal</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><textarea class="input-pesan">Halo! Ini adalah Pesan Variasi A untuk kamu ikuti game hari ini.</textarea></td>
+            <td><button class="btn btn-del" onclick="hapusBaris(this, 'tabelPesan')">Hapus</button></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><textarea class="input-pesan">Halo! Ini adalah Pesan Variasi B untuk tantangan kamu hari ini.</textarea></td>
+            <td><button class="btn btn-del" onclick="hapusBaris(this, 'tabelPesan')">Hapus</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn btn-add" onclick="tambahBarisPesan()">+ Tambah Pesan</button>
+    </div>
+  </div>
+
+  <button class="btn btn-process" onclick="acakDanJodohkan()">🎲 Acak Pesan & Buat Link Kirim</button>
+
+  <!-- Tabel Pratinjau & Tombol Kirim -->
+  <div class="preview-table" id="areaPreview" style="display:none;">
+    <h3>Hasil Pasangan Nomor & Pesan Teracak</h3>
+    <table id="tabelHasil">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nomor Tujuan</th>
+          <th>Pesan Yang Didapat (Teracak)</th>
+          <th>Kirim</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function tambahBarisNomor() {
+    const tbody = document.querySelector('#tabelNomor tbody');
+    const rowCount = tbody.rows.length + 1;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${rowCount}</td>
+      <td><input type="text" class="input-nomor" placeholder="628xxx"></td>
+      <td><button class="btn btn-del" onclick="hapusBaris(this, 'tabelNomor')">Hapus</button></td>
+    `;
+    tbody.appendChild(tr);
+    updateNomorUrut('tabelNomor');
+  }
+
+  function tambahBarisPesan() {
+    const tbody = document.querySelector('#tabelPesan tbody');
+    const rowCount = tbody.rows.length + 1;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${rowCount}</td>
+      <td><textarea class="input-pesan" placeholder="Tulis pesan/soal di sini..."></textarea></td>
+      <td><button class="btn btn-del" onclick="hapusBaris(this, 'tabelPesan')">Hapus</button></td>
+    `;
+    tbody.appendChild(tr);
+    updateNomorUrut('tabelPesan');
+  }
+
+  function hapusBaris(btn, tableId) {
+    const row = btn.closest('tr');
+    row.remove();
+    updateNomorUrut(tableId);
+  }
+
+  function updateNomorUrut(tableId) {
+    const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+    rows.forEach((row, index) => {
+      row.cells[0].innerText = index + 1;
+    });
+  }
+
+  function shuffleArray(array) {
+    let arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function acakDanJodohkan() {
+    // Ambil semua nomor WA
+    const nomorInputs = document.querySelectorAll('.input-nomor');
+    let daftarNomor = [];
+    nomorInputs.forEach(input => {
+      let val = input.value.trim().replace(/[^0-9]/g, '');
+      if (val) daftarNomor.push(val);
+    });
+
+    // Ambil semua pesan
+    const pesanInputs = document.querySelectorAll('.input-pesan');
+    let daftarPesan = [];
+    pesanInputs.forEach(input => {
+      let val = input.value.trim();
+      if (val) daftarPesan.push(val);
+    });
+
+    if (daftarNomor.length === 0) {
+      alert('Harap masukkan minimal satu nomor WhatsApp!');
+      return;
+    }
+
+    if (daftarPesan.length === 0) {
+      alert('Harap masukkan minimal satu pesan!');
+      return;
+    }
+
+    // Acak daftar pesan
+    let pesanTeracak = shuffleArray(daftarPesan);
+
+    const tbodyHasil = document.querySelector('#tabelHasil tbody');
+    tbodyHasil.innerHTML = '';
+
+    daftarNomor.forEach((nomor, index) => {
+      // Mengambil pesan hasil acakan (looping jika jumlah nomor lebih banyak dari jumlah variasi pesan)
+      let pesanDapat = pesanTeracak[index % pesanTeracak.length];
+      
+      let encodedText = encodeURIComponent(pesanDapat);
+      let urlWA = `https://wa.me/${nomor}?text=${encodedText}`;
+
+      let tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td><b>${nomor}</b></td>
+        <td><div style="white-space: pre-wrap;">${pesanDapat}</div></td>
+        <td>
+          <a href="${urlWA}" target="_blank" class="btn-wa">Kirim WA</a>
+        </td>
+      `;
+      tbodyHasil.appendChild(tr);
+    });
+
+    document.getElementById('areaPreview').style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
